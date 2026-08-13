@@ -12,8 +12,8 @@ pub static ref BUTTON_TO_HID: HashMap<Button, u32> = {
         scancode.insert(Button::Left, 0x101);
         scancode.insert(Button::Right, 0x102);
         scancode.insert(Button::Middle, 0x103);
-        scancode.insert(Button::Forward, 0x104);
-        scancode.insert(Button::Backward, 0x105);
+        scancode.insert(Button::Unknown(1), 0x104);
+        scancode.insert(Button::Unknown(2), 0x105);
         scancode
 };}
 
@@ -23,9 +23,26 @@ impl From<&Button> for MouseButton {
             Button::Left => MouseButton::Left,
             Button::Right => MouseButton::Right,
             Button::Middle => MouseButton::Middle,
-            Button::Forward => MouseButton::Mouse4,
-            Button::Backward => MouseButton::Mouse5,
+            Button::Unknown(1) => MouseButton::Mouse4,
+            Button::Unknown(2) => MouseButton::Mouse5,
             Button::Unknown(_) => MouseButton::Left,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn maps_side_mouse_buttons_to_rdev_codes() {
+        for (button, rdev_button, hid) in [
+            (MouseButton::Mouse4, Button::Unknown(1), 0x104),
+            (MouseButton::Mouse5, Button::Unknown(2), 0x105),
+        ] {
+            assert_eq!(Button::from(&button), rdev_button);
+            assert_eq!(MouseButton::from(&rdev_button), button);
+            assert_eq!(BUTTON_TO_HID.get(&rdev_button), Some(&hid));
         }
     }
 }
@@ -36,8 +53,8 @@ impl From<&MouseButton> for Button {
             MouseButton::Left => Button::Left,
             MouseButton::Right => Button::Right,
             MouseButton::Middle => Button::Middle,
-            MouseButton::Mouse4 => Button::Forward,
-            MouseButton::Mouse5 => Button::Backward,
+            MouseButton::Mouse4 => Button::Unknown(1),
+            MouseButton::Mouse5 => Button::Unknown(2),
         }
     }
 }

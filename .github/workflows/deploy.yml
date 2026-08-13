@@ -38,12 +38,12 @@ jobs:
       - name: Install frontend dependencies
         run: yarn install --immutable
 
-      # Rust 1.80 and newer cannot compile the time 0.3.34 version in the
-      # repository lockfile. Keep CI reproducible until that dependency is updated.
+      # rdev uses the Rust 2024 edition, which requires Rust 1.85 or newer.
+      # Pin the minimum compatible toolchain to keep CI reproducible.
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: 1.79.0
+          toolchain: 1.85.0
           targets: x86_64-pc-windows-msvc
 
       - name: Cache Rust dependencies
