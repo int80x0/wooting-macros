@@ -94,7 +94,22 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: Wootomation Active v__VERSION__
-          releaseBody: See the in-app patch notes and the commit history for this release.
+          releaseBody: |
+            ## 1.1.2 Release
+
+            - [Added] Mouse wheel actions for scrolling up and down in macro sequences.
+            - [Added] Mouse wheel triggers for starting macros.
+            - [Added] Mouse wheel recording with preserved action timing.
+            - [Fixed] Mouse wheel triggers on Windows.
+            - [Changed] Wootomation Active now publishes Windows and Linux release artifacts.
+
+            ## More detailed changelog
+
+            - Scroll actions can be added from the mouse action panel and their step count can be edited.
+            - Scroll up and scroll down can be recorded as macro triggers.
+            - Sequence recording captures mouse wheel input alongside keyboard and mouse button actions.
+            - Windows builds work without an Authenticode certificate and retain Tauri updater signatures.
+            - Linux releases include AppImage and Debian packages.
           releaseDraft: false
           prerelease: false
           args: ${{ steps.unsigned-windows-config.outputs.args }}
