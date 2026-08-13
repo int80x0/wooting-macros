@@ -1,4 +1,9 @@
-import { MacroType, MouseButton, ViewState } from './constants/enums'
+import {
+  MacroType,
+  MouseButton,
+  MouseWheelDirection,
+  ViewState
+} from './constants/enums'
 import { HidInfo } from './constants/HIDmap'
 import { PluginEventInfo } from './constants/PluginsEventMap'
 
@@ -73,6 +78,9 @@ export type TriggerEventType =
       allow_while_other_keys: boolean
     }
   | { type: 'MouseEvent'; data: MouseButton }
+  | { type: 'MouseWheelEvent'; data: MouseWheelDirection }
+
+export type TriggerRecordingItem = number | MouseWheelDirection
 
 export type KeyPressEventAction = {
   type: 'KeyPressEventAction'

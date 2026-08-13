@@ -7,7 +7,7 @@ import {
   useMemo,
   useState
 } from 'react'
-import { MacroType, ViewState } from '../constants/enums'
+import { MacroType, MouseWheelDirection, ViewState } from '../constants/enums'
 import { checkIfElementIsEditable } from '../constants/utils'
 import {
   ActionEventType,
@@ -83,6 +83,24 @@ function MacroProvider({ children }: MacroProviderProps) {
       )
   }, [sequence])
 
+  const mouseWheelDirectionsInSequence = useMemo(() => {
+    return sequence
+      .filter(
+        (element): element is MouseEventAction =>
+          element.type === 'MouseEventAction'
+      )
+      .flatMap((element: MouseEventAction) => {
+        if (element.data.type !== 'Wheel' || element.data.delta_y === 0) {
+          return []
+        }
+        return [
+          element.data.delta_y > 0
+            ? MouseWheelDirection.Up
+            : MouseWheelDirection.Down
+        ]
+      })
+  }, [sequence])
+
   const willCauseTriggerLooping = useMemo(() => {
     let willTriggerAnotherMacro = false
 
@@ -101,8 +119,15 @@ function MacroProvider({ children }: MacroProviderProps) {
           if (willTriggerAnotherMacro) {
             break
           }
-        } else {
+        } else if (macroToCheck.trigger.type === 'MouseEvent') {
           willTriggerAnotherMacro = mousepressesInSequence.includes(
+            macroToCheck.trigger.data
+          )
+          if (willTriggerAnotherMacro) {
+            break
+          }
+        } else {
+          willTriggerAnotherMacro = mouseWheelDirectionsInSequence.includes(
             macroToCheck.trigger.data
           )
           if (willTriggerAnotherMacro) {
@@ -119,12 +144,14 @@ function MacroProvider({ children }: MacroProviderProps) {
           keypressesInSequence.includes(triggerKey)
         )
       }
+    } else if (macro.trigger.type === 'MouseEvent') {
+      willTriggerAnotherMacro = mousepressesInSequence.includes(
+        macro.trigger.data
+      )
     } else {
-      if (macro.trigger.data !== undefined) {
-        willTriggerAnotherMacro = mousepressesInSequence.includes(
-          macro.trigger.data
-        )
-      }
+      willTriggerAnotherMacro = mouseWheelDirectionsInSequence.includes(
+        macro.trigger.data
+      )
     }
     return willTriggerAnotherMacro
   }, [
@@ -133,14 +160,13 @@ function MacroProvider({ children }: MacroProviderProps) {
     macro.trigger.type,
     keypressesInSequence,
     mousepressesInSequence,
+    mouseWheelDirectionsInSequence,
     selection.macroIndex
   ])
   const canSaveMacro = useMemo(() => {
     if (
       (macro.trigger.type === 'KeyPressEvent' &&
         macro.trigger.data.length === 0) ||
-      (macro.trigger.type === 'MouseEvent' &&
-        macro.trigger.data === undefined) ||
       sequence.length === 0
     ) {
       return false

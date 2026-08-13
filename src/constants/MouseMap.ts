@@ -1,4 +1,4 @@
-import { MouseButton } from './enums'
+import { MouseButton, MouseWheelDirection } from './enums'
 
 export interface MouseInputInfo {
   webButtonVal: number
@@ -8,6 +8,7 @@ export interface MouseInputInfo {
 
 export interface MouseWheelInputInfo {
   deltaY: number
+  direction: MouseWheelDirection
   displayString: string
 }
 
@@ -61,6 +62,7 @@ export class MouseWheelInput {
   static get Up(): MouseWheelInputInfo {
     return {
       deltaY: 1,
+      direction: MouseWheelDirection.Up,
       displayString: 'Scroll Up'
     }
   }
@@ -68,6 +70,7 @@ export class MouseWheelInput {
   static get Down(): MouseWheelInputInfo {
     return {
       deltaY: -1,
+      direction: MouseWheelDirection.Down,
       displayString: 'Scroll Down'
     }
   }
@@ -89,3 +92,8 @@ export const mouseEnumLookup = new Map<MouseButton, MouseInputInfo>(
     .filter((button) => button.enumVal !== undefined)
     .map((button) => [button.enumVal!, button])
 )
+
+export const mouseWheelDirectionLookup = new Map<
+  MouseWheelDirection,
+  MouseWheelInputInfo
+>(MouseWheelInput.all.map((wheelInput) => [wheelInput.direction, wheelInput]))

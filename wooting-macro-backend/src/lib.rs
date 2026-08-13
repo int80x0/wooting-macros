@@ -92,6 +92,9 @@ pub enum TriggerEventType {
     MouseEvent {
         data: mouse::MouseButton,
     },
+    MouseWheelEvent {
+        data: mouse::MouseWheelDirection,
+    },
     //IDEA: computer time (have timezone support?)
     //IDEA: computer temperature?
 }
@@ -242,6 +245,16 @@ impl MacroData {
                                     }
                                 }
                             }
+                            TriggerEventType::MouseWheelEvent { data } => {
+                                let data: u32 = data.into();
+
+                                match output_hashmap.get_mut(&data) {
+                                    Some(value) => value.push(macros.clone()),
+                                    None => {
+                                        output_hashmap.insert_nocheck(data, vec![macros.clone()])
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -377,6 +390,19 @@ fn check_macro_execution_efficiently(
                     "CheckMacroExec: Converted mouse buttons to vec<u32>\n {:#?}",
                     event_to_check
                 );
+
+                if event_to_check == pressed_events {
+                    let channel_clone = channel_sender.clone();
+                    let macro_clone = macros.clone();
+
+                    task::spawn(async move {
+                        execute_macro(macro_clone, channel_clone).await;
+                    });
+                    output = true;
+                }
+            }
+            TriggerEventType::MouseWheelEvent { data } => {
+                let event_to_check: Vec<u32> = vec![data.into()];
 
                 if event_to_check == pressed_events {
                     let channel_clone = channel_sender.clone();
@@ -570,7 +596,30 @@ impl MacroBackend {
                             Some(event)
                         }
                         rdev::EventType::MouseMove { .. } => Some(event),
-                        rdev::EventType::Wheel { .. } => Some(event),
+                        rdev::EventType::Wheel { delta_y, .. } => {
+                            let Some(direction) =
+                                mouse::MouseWheelDirection::from_delta_y(delta_y)
+                            else {
+                                return Some(event);
+                            };
+                            let lookup_key: u32 = (&direction).into();
+                            let trigger_list = inner_triggers.blocking_read().clone();
+                            let check_these_macros = trigger_list
+                                .get(&lookup_key)
+                                .cloned()
+                                .unwrap_or_default();
+                            let should_grab = check_macro_execution_efficiently(
+                                vec![lookup_key],
+                                check_these_macros,
+                                schan_execute.clone(),
+                            );
+
+                            if should_grab {
+                                None
+                            } else {
+                                Some(event)
+                            }
+                        }
                     }
                 } else {
                     Some(event)

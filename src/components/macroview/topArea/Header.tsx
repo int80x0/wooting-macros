@@ -72,9 +72,8 @@ export default function Header({ isEditing }: Props) {
 
   const saveButtonTooltipText = useMemo((): string => {
     if (
-      (macro.trigger.type === 'KeyPressEvent' &&
-        macro.trigger.data.length === 0) ||
-      (macro.trigger.type === 'MouseEvent' && macro.trigger.data === undefined)
+      macro.trigger.type === 'KeyPressEvent' &&
+      macro.trigger.data.length === 0
     ) {
       return 'Please set your trigger keys!'
     } else if (sequence.length === 0) {
@@ -110,8 +109,8 @@ export default function Header({ isEditing }: Props) {
         sequence.length > 0 ||
         (macro.trigger.type === 'KeyPressEvent' &&
           macro.trigger.data.length > 0) ||
-        (macro.trigger.type === 'MouseEvent' &&
-          macro.trigger.data !== undefined) ||
+        macro.trigger.type === 'MouseEvent' ||
+        macro.trigger.type === 'MouseWheelEvent' ||
         macro.name !== '' ||
         hasUserChangedIcon
       ) {

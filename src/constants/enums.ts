@@ -32,6 +32,11 @@ export enum MouseButton {
   Mouse5 = 261
 }
 
+export enum MouseWheelDirection {
+  Up = 'Up',
+  Down = 'Down'
+}
+
 export enum SettingsCategory {
   General,
   Macro,
@@ -43,10 +48,9 @@ export enum HIDCategory {
   Numpad,
   Function, // F1-24
   Modifier,
-  Navigation, // arrow keys and pg up, pg down, etc
+  Navigation // arrow keys and pg up, pg down, etc
 }
 
 /** To be Expanded */
-export enum PluginGroup {
-  // e.g. PhillipsHue, or OBS
-}
+export enum PluginGroup {}
+// e.g. PhillipsHue, or OBS

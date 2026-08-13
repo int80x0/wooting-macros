@@ -20,7 +20,10 @@ import { Macro } from '../../types'
 import { HIDLookup } from '../../constants/HIDmap'
 import { useApplicationContext } from '../../contexts/applicationContext'
 import { useSelectedCollection } from '../../contexts/selectors'
-import { mouseEnumLookup } from '../../constants/MouseMap'
+import {
+  mouseEnumLookup,
+  mouseWheelDirectionLookup
+} from '../../constants/MouseMap'
 import { useCallback, useMemo } from 'react'
 import { KebabVertical } from '../icons'
 import useMainBgColour from '../../hooks/useMainBgColour'
@@ -163,6 +166,11 @@ export default function MacroCard({
           {macro.trigger.type === 'MouseEvent' && (
             <Kbd fontSize="md" variant="brand">
               {mouseEnumLookup.get(macro.trigger.data)?.displayString}
+            </Kbd>
+          )}
+          {macro.trigger.type === 'MouseWheelEvent' && (
+            <Kbd fontSize="md" variant="brand">
+              {mouseWheelDirectionLookup.get(macro.trigger.data)?.displayString}
             </Kbd>
           )}
         </Flex>

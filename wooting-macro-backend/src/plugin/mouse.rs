@@ -7,6 +7,9 @@ pub use rdev;
 
 use std::time;
 
+const MOUSE_WHEEL_UP_TRIGGER: u32 = u32::MAX - 1;
+const MOUSE_WHEEL_DOWN_TRIGGER: u32 = u32::MAX;
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Hash, Eq)]
 #[serde(tag = "type")]
 /// Mouse action: Press presses a defined button, Move moves to absolute coordinates X and Y,
@@ -31,6 +34,34 @@ pub enum MouseButton {
     Middle = 0x103,
     Mouse4 = 0x104,
     Mouse5 = 0x105,
+}
+
+#[derive(
+    Debug, Copy, Clone, serde::Serialize, serde::Deserialize, PartialEq, Hash, Eq,
+)]
+/// Vertical mouse wheel direction used by macro triggers.
+pub enum MouseWheelDirection {
+    Up,
+    Down,
+}
+
+impl MouseWheelDirection {
+    pub fn from_delta_y(delta_y: i64) -> Option<Self> {
+        match delta_y.cmp(&0) {
+            std::cmp::Ordering::Greater => Some(Self::Up),
+            std::cmp::Ordering::Less => Some(Self::Down),
+            std::cmp::Ordering::Equal => None,
+        }
+    }
+}
+
+impl From<&MouseWheelDirection> for u32 {
+    fn from(direction: &MouseWheelDirection) -> Self {
+        match direction {
+            MouseWheelDirection::Up => MOUSE_WHEEL_UP_TRIGGER,
+            MouseWheelDirection::Down => MOUSE_WHEEL_DOWN_TRIGGER,
+        }
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Hash, Eq)]
@@ -106,6 +137,23 @@ mod tests {
             })
         );
         assert_eq!(serde_json::from_value::<MouseAction>(json).unwrap(), action);
+    }
+
+    #[test]
+    fn maps_vertical_deltas_to_trigger_directions() {
+        assert_eq!(
+            MouseWheelDirection::from_delta_y(1),
+            Some(MouseWheelDirection::Up)
+        );
+        assert_eq!(
+            MouseWheelDirection::from_delta_y(-4),
+            Some(MouseWheelDirection::Down)
+        );
+        assert_eq!(MouseWheelDirection::from_delta_y(0), None);
+        assert_ne!(
+            u32::from(&MouseWheelDirection::Up),
+            u32::from(&MouseWheelDirection::Down)
+        );
     }
 
     #[tokio::test]

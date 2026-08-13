@@ -9,7 +9,10 @@ import {
 } from '@chakra-ui/react'
 import { useMacroContext } from '../../../contexts/macroContext'
 import { HIDLookup } from '../../../constants/HIDmap'
-import { mouseEnumLookup } from '../../../constants/MouseMap'
+import {
+  mouseEnumLookup,
+  mouseWheelDirectionLookup
+} from '../../../constants/MouseMap'
 
 interface Props {
   onOpen: () => void
@@ -30,7 +33,7 @@ export default function TriggerArea({ onOpen }: Props) {
       gap={2}
       divider={<StackDivider />}
       shadow={shadowColour}
-      rounded='md'
+      rounded="md"
       justifyContent="space-between"
     >
       <Text fontWeight="semibold" fontSize={['sm', 'md']} whiteSpace="nowrap">
@@ -42,7 +45,7 @@ export default function TriggerArea({ onOpen }: Props) {
         h="27px"
         justifyContent="center"
         bg={secondBg}
-        rounded='md'
+        rounded="md"
         p="9px"
         shadow="inner"
       >
@@ -55,6 +58,11 @@ export default function TriggerArea({ onOpen }: Props) {
         {macro.trigger.type === 'MouseEvent' && (
           <Kbd fontSize="md" variant="brand">
             {mouseEnumLookup.get(macro.trigger.data)?.displayString}
+          </Kbd>
+        )}
+        {macro.trigger.type === 'MouseWheelEvent' && (
+          <Kbd fontSize="md" variant="brand">
+            {mouseWheelDirectionLookup.get(macro.trigger.data)?.displayString}
           </Kbd>
         )}
       </HStack>

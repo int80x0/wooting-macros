@@ -1,12 +1,13 @@
 import { invoke } from '@tauri-apps/api'
-import { HIDCategory, MouseButton } from './enums'
+import { HIDCategory, MouseButton, MouseWheelDirection } from './enums'
 import {
   ActionEventType,
   ApplicationConfig,
   Collection,
   Keypress,
   MacroData,
-  MousePressAction
+  MousePressAction,
+  TriggerRecordingItem
 } from '../types'
 import { HIDLookup } from './HIDmap'
 import { mouseEnumLookup } from './MouseMap'
@@ -33,11 +34,27 @@ export const isDebug = (): Promise<boolean> => {
 }
 
 export const checkIfMouseButtonArray = (
-  items: number[] | MouseButton[]
+  items: TriggerRecordingItem[]
 ): items is MouseButton[] => {
-  return Object.keys(MouseButton).includes(
-    (items as MouseButton[])[0].toString()
+  return (
+    items.length > 0 &&
+    typeof items[0] === 'number' &&
+    Object.values(MouseButton).includes(items[0] as MouseButton)
   )
+}
+
+export const checkIfMouseWheelDirection = (
+  item: TriggerRecordingItem
+): item is MouseWheelDirection => {
+  return Object.values(MouseWheelDirection).includes(
+    item as MouseWheelDirection
+  )
+}
+
+export const checkIfMouseWheelDirectionArray = (
+  items: TriggerRecordingItem[]
+): items is MouseWheelDirection[] => {
+  return items.length === 1 && checkIfMouseWheelDirection(items[0])
 }
 
 export const checkIfKeypress = (

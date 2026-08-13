@@ -1,24 +1,28 @@
 import { useToast } from '@chakra-ui/react'
 import { useCallback, useEffect, useState } from 'react'
-import { MouseButton } from '../constants/enums'
-import { webCodeLocationHidEncode, webCodeLocationHIDLookup } from '../constants/HIDmap'
+import { MouseWheelDirection } from '../constants/enums'
+import {
+  webCodeLocationHidEncode,
+  webCodeLocationHIDLookup
+} from '../constants/HIDmap'
 import { webButtonLookup } from '../constants/MouseMap'
 import { checkIfKeyShouldContinueTriggerRecording } from '../constants/utils'
 import { error } from 'tauri-plugin-log'
 import { invoke } from '@tauri-apps/api'
+import { TriggerEventType, TriggerRecordingItem } from '../types'
 
 export default function useRecordingTrigger(
-  initialItems: MouseButton | number[]
+  initialItems: TriggerEventType['data']
 ) {
   const [recording, setRecording] = useState(false)
-  const [items, setItems] = useState<number[]>(() => {
+  const [items, setItems] = useState<TriggerRecordingItem[]>(() => {
     if (Array.isArray(initialItems)) {
       return initialItems
     } else {
       return [initialItems]
     }
   })
-  const [prevItems, setPrevItems] = useState<number[]>([])
+  const [prevItems, setPrevItems] = useState<TriggerRecordingItem[]>([])
   const toast = useToast()
 
   const resetItems = useCallback(() => {
@@ -41,7 +45,10 @@ export default function useRecordingTrigger(
       event.stopPropagation()
 
       // Gets the ID according to the whichID, adds a separator extra digit '1' and then adds location to the end.
-      const HIDIdentifier = webCodeLocationHidEncode(event.which, event.location)
+      const HIDIdentifier = webCodeLocationHidEncode(
+        event.which,
+        event.location
+      )
 
       const HIDcode = webCodeLocationHIDLookup.get(HIDIdentifier)?.HIDcode
 
@@ -50,7 +57,7 @@ export default function useRecordingTrigger(
       }
 
       setItems((items) => {
-        let newItems: number[] = []
+        let newItems: TriggerRecordingItem[] = []
         if (items.filter((item) => item === HIDcode).length > 0) {
           // Prevent duplicate keys
           newItems = items
@@ -61,6 +68,23 @@ export default function useRecordingTrigger(
       })
 
       if (!checkIfKeyShouldContinueTriggerRecording(HIDcode)) stopRecording()
+    },
+    [stopRecording]
+  )
+
+  const addMousewheel = useCallback(
+    (event: WheelEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (event.deltaY === 0) {
+        return
+      }
+
+      setItems([
+        event.deltaY < 0 ? MouseWheelDirection.Up : MouseWheelDirection.Down
+      ])
+      stopRecording()
     },
     [stopRecording]
   )
@@ -96,6 +120,10 @@ export default function useRecordingTrigger(
 
     window.addEventListener('keydown', addKeypress, true)
     window.addEventListener('mousedown', addMousepress, true)
+    window.addEventListener('wheel', addMousewheel, {
+      capture: true,
+      passive: false
+    })
     invoke<void>('control_grabbing', { frontendBool: false }).catch((e) => {
       error(e)
       toast({
@@ -110,6 +138,7 @@ export default function useRecordingTrigger(
     return () => {
       window.removeEventListener('keydown', addKeypress, true)
       window.removeEventListener('mousedown', addMousepress, true)
+      window.removeEventListener('wheel', addMousewheel, true)
       invoke<void>('control_grabbing', { frontendBool: true }).catch((e) => {
         error(e)
         toast({
@@ -121,7 +150,7 @@ export default function useRecordingTrigger(
         })
       })
     }
-  }, [recording, addKeypress, addMousepress, toast])
+  }, [recording, addKeypress, addMousepress, addMousewheel, toast])
 
   return {
     recording,

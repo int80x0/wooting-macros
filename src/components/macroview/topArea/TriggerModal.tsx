@@ -14,16 +14,23 @@ import {
   useColorModeValue,
   VStack
 } from '@chakra-ui/react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useMacroContext } from '../../../contexts/macroContext'
 import useRecordingTrigger from '../../../hooks/useRecordingTrigger'
 import { HIDLookup } from '../../../constants/HIDmap'
-import { mouseEnumLookup } from '../../../constants/MouseMap'
+import {
+  mouseEnumLookup,
+  mouseWheelDirectionLookup
+} from '../../../constants/MouseMap'
 import {
   checkIfModifierKey,
-  checkIfMouseButtonArray
+  checkIfMouseButtonArray,
+  checkIfMouseWheelDirection,
+  checkIfMouseWheelDirectionArray
 } from '../../../constants/utils'
 import { RecordIcon, StopIcon } from '../../icons'
+import { MouseButton } from '../../../constants/enums'
+import { TriggerRecordingItem } from '../../../types'
 
 interface Props {
   isOpen: boolean
@@ -34,23 +41,28 @@ export default function TriggerModal({ isOpen, onClose }: Props) {
   const { macro, updateTrigger } = useMacroContext()
   const { recording, startRecording, stopRecording, items, resetItems } =
     useRecordingTrigger(macro.trigger.data)
-  const isTriggerMousepress = useMemo(() => {
+  const isTriggerMouseInput = useMemo(() => {
     if (items.length === 0) {
       return true
     }
-    return checkIfMouseButtonArray(items)
+    return (
+      checkIfMouseButtonArray(items) || checkIfMouseWheelDirectionArray(items)
+    )
   }, [items])
-  const [isAllowed, setIsAllowed] = useState(false) // Currently not used
   const secondBg = useColorModeValue('blue.50', 'gray.800')
 
   const getTriggerCanSave = useMemo((): boolean => {
     if (items.length === 0) {
       return false
     } else {
-      if (isTriggerMousepress) {
+      if (isTriggerMouseInput) {
         return true
       } else {
         return items.some((element) => {
+          if (checkIfMouseWheelDirection(element)) {
+            return false
+          }
+
           if (checkIfModifierKey(element)) {
             return false
           } else {
@@ -59,7 +71,7 @@ export default function TriggerModal({ isOpen, onClose }: Props) {
         })
       }
     }
-  }, [isTriggerMousepress, items])
+  }, [isTriggerMouseInput, items])
 
   const onModalSuccessClose = useCallback(() => {
     if (checkIfMouseButtonArray(items)) {
@@ -67,14 +79,23 @@ export default function TriggerModal({ isOpen, onClose }: Props) {
         type: 'MouseEvent',
         data: items[0]
       })
+    } else if (checkIfMouseWheelDirectionArray(items)) {
+      updateTrigger({
+        type: 'MouseWheelEvent',
+        data: items[0]
+      })
     } else {
+      const keyItems = items.filter(
+        (item): item is number => typeof item === 'number'
+      )
+
       if (macro.trigger.type === 'KeyPressEvent') {
-        updateTrigger({ ...macro.trigger, data: items })
+        updateTrigger({ ...macro.trigger, data: keyItems })
       } else {
         updateTrigger({
           ...macro.trigger,
           type: 'KeyPressEvent',
-          data: items,
+          data: keyItems,
           allow_while_other_keys: false
         })
       }
@@ -83,37 +104,22 @@ export default function TriggerModal({ isOpen, onClose }: Props) {
   }, [items, macro.trigger, onClose, updateTrigger])
 
   const getDisplayString = useCallback(
-    (element: number, isMouseButton: boolean): string => {
-      if (isMouseButton) {
-        const displayString = mouseEnumLookup.get(element)?.displayString
-        if (displayString === undefined) {
-          return 'error'
-        }
-        return displayString
-      } else {
-        const displayString = HIDLookup.get(element)?.displayString
-        if (displayString === undefined) {
-          return 'error'
-        }
-        return displayString
+    (element: TriggerRecordingItem): string => {
+      if (checkIfMouseWheelDirection(element)) {
+        return mouseWheelDirectionLookup.get(element)?.displayString ?? 'error'
       }
+
+      return (
+        mouseEnumLookup.get(element as MouseButton)?.displayString ??
+        HIDLookup.get(element)?.displayString ??
+        'error'
+      )
     },
     []
   )
 
   const displayNames = useMemo((): string[] => {
-    if (items.length === 0) return []
-    const names: string[] = []
-    if (checkIfMouseButtonArray(items)) {
-      items.forEach((element) => {
-        names.push(getDisplayString(element, true))
-      })
-    } else {
-      items.forEach((element) => {
-        names.push(getDisplayString(element, false))
-      })
-    }
-    return names
+    return items.map(getDisplayString)
   }, [getDisplayString, items])
 
   return (
@@ -137,13 +143,14 @@ export default function TriggerModal({ isOpen, onClose }: Props) {
                 minH="42px"
                 bg={secondBg}
                 justifyContent="center"
-                rounded='md'
+                rounded="md"
                 p="9px"
                 shadow="inner"
               >
                 {items.length === 0 && (
                   <Text textAlign="center">
-                    Set up to 4 keys or a mouse button to use as the trigger
+                    Set up to 4 keys, a mouse button, or the scroll wheel as the
+                    trigger
                   </Text>
                 )}
                 {items.map((element, index) => (
@@ -189,7 +196,7 @@ export default function TriggerModal({ isOpen, onClose }: Props) {
                 variant="brand"
                 defaultChecked={isAllowed}
                 isChecked={isAllowed}
-                isDisabled={isTriggerMousepress}
+                isDisabled={isTriggerMouseInput}
                 onChange={() => setIsAllowed(!isAllowed)}
               />
             </HStack>
