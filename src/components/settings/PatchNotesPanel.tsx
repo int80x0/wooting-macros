@@ -17,7 +17,7 @@ export default function PatchNotesPanel() {
   return (
     <VStack w="full" spacing={4}>
       <Text w="full" fontWeight="bold" fontSize="sm">
-        December 21st, 2023, v. 1.1
+        August 13th, 2026, v. 1.1.1
       </Text>
       <VStack w="full">
         <Heading w="full" size="lg" textColor={whatsNewTextColour}>
@@ -36,9 +36,10 @@ export default function PatchNotesPanel() {
               fontFamily="Montserrat"
               textColor={highlightedTextColour}
             >
-              New UI.&nbsp;
+              Mouse wheel actions.&nbsp;
             </Text>
-            New, smoother UI with animations and nicer colors.
+            Add scroll up or scroll down actions to a macro and choose the
+            number of wheel steps to send.
           </ListItem>
           <ListItem>
             <Text
@@ -46,10 +47,9 @@ export default function PatchNotesPanel() {
               fontFamily="Montserrat"
               textColor={highlightedTextColour}
             >
-              Macro search.&nbsp;
+              Mouse wheel triggers.&nbsp;
             </Text>
-            You can now search your macros from the main window across all
-            collections.
+            Bind macros directly to scrolling up or down, including on Windows.
           </ListItem>
           <ListItem>
             <Text
@@ -57,10 +57,10 @@ export default function PatchNotesPanel() {
               fontFamily="Montserrat"
               textColor={highlightedTextColour}
             >
-              Security updates and bugfixes.&nbsp;
+              Record scrolling.&nbsp;
             </Text>
-            We updated the dependencies so Wootomation stays secure. You can now
-            also use any layout for a trigger key.
+            Macro recording now captures mouse wheel up and down events with
+            their timing.
           </ListItem>
           <ListItem>
             <Text
@@ -68,22 +68,10 @@ export default function PatchNotesPanel() {
               fontFamily="Montserrat"
               textColor={highlightedTextColour}
             >
-              Gaming.&nbsp;
+              Active development.&nbsp;
             </Text>
-            Macros now work in games! However, we don't support nor endorse
-            their use in multiplayer games, using them in such context is at
-            your own risk!
-          </ListItem>
-          <ListItem>
-            <Text
-              as="span"
-              fontFamily="Montserrat"
-              textColor={highlightedTextColour}
-            >
-              Keycombos.&nbsp;
-            </Text>
-            Key combos should now work properly, so you can now do the
-            CTRL+SHIFT+KEY combos you always wanted.
+            Wootomation Active is maintained with regular fixes, features, and
+            Windows and Linux release builds.
           </ListItem>
         </UnorderedList>
       </VStack>

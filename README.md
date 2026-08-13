@@ -1,8 +1,12 @@
-# Wootomation
+# Wootomation Active
 
 <p align="center">
   <img alt="Wootomation* – Create macros to use with any keyboard and any mouse" src=".github/assets/app-hero-banner.jpg">
 </p>
+
+> **Wootomation Active** is an actively developed continuation of Wootomation.
+> It keeps the familiar macro experience while shipping ongoing fixes and new
+> functionality for Windows and Linux.
 
 ## Features
 
@@ -22,7 +26,9 @@
 
 ## Installing the App
 
-Download the [Latest Release here](https://github.com/WootingKb/wooting-macros/releases/latest)
+Download the [latest stable release](https://github.com/int80x0/wooting-macros/releases/latest).
+Each published version includes the Windows MSI plus Linux AppImage and Debian
+packages.
 
 For MS Windows, download the MSI and then run it to install the application.
 

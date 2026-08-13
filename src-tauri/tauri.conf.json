@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "Wootomation",
-    "version": "1.1.0"
+    "version": "1.1.1"
   },
   "tauri": {
     "allowlist": {
@@ -75,10 +75,10 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://github.com/WootingKb/wooting-macros/releases/latest/download/latest.json"
+        "https://github.com/int80x0/wooting-macros/releases/latest/download/latest.json"
       ],
       "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDREQUQ1NEIxNDQzMzRDRApSV1ROTkVNVVM5WGFCRnJ1bmtMZmtOa0ZwT1dQSWhyZmk4WWJhSmU1YXpaSTBicHVabE02RnVLMAo="
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDgxOTJCOTZGNDRFOEREMkEKUldRcTNlaEViN21TZ1diNzZ4dHd6QW1wc0ZxUTZucXYzVUpwMVZBUDNId0xSeW9GcGwzamNXU08K"
     },
     "windows": [
       {

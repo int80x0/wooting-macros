@@ -1,25 +1,37 @@
-name: Build Windows MSI
+name: Publish Wootomation Active
 
 on:
   push:
-    branches:
-      - main
-      - release
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: windows-msi-${{ github.ref }}
-  cancel-in-progress: true
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-msi:
-    name: Windows MSI
-    runs-on: windows-latest
+  publish-tauri:
+    name: ${{ matrix.name }} release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux
+            os: ubuntu-22.04
+            rust-target: x86_64-unknown-linux-gnu
+          - name: Windows
+            os: windows-latest
+            rust-target: x86_64-pc-windows-msvc
+
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     env:
+      TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+      TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
       WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
       WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
@@ -39,20 +51,25 @@ jobs:
         run: yarn install --immutable
 
       # rdev uses the Rust 2024 edition, which requires Rust 1.85 or newer.
-      # Pin the minimum compatible toolchain to keep CI reproducible.
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.85.0
-          targets: x86_64-pc-windows-msvc
+          targets: ${{ matrix.rust-target }}
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri -> target
 
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+
       - name: Import Windows signing certificate
-        if: env.WINDOWS_CERTIFICATE != ''
+        if: runner.os == 'Windows' && env.WINDOWS_CERTIFICATE != ''
         shell: pwsh
         run: |
           $certificatePath = Join-Path $env:RUNNER_TEMP 'certificate.pfx'
@@ -61,22 +78,23 @@ jobs:
           $password = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
           Import-PfxCertificate -FilePath $certificatePath -CertStoreLocation Cert:\CurrentUser\My -Password $password
 
-      - name: Build signed MSI
-        if: env.WINDOWS_CERTIFICATE != ''
-        run: yarn tauri build --bundles msi --ci
-
-      - name: Build unsigned MSI
-        if: env.WINDOWS_CERTIFICATE == ''
+      - name: Configure unsigned Windows bundle
+        id: unsigned-windows-config
+        if: runner.os == 'Windows' && env.WINDOWS_CERTIFICATE == ''
         shell: pwsh
         run: |
           $configPath = Join-Path $env:RUNNER_TEMP 'tauri.unsigned.conf.json'
-          '{"tauri":{"bundle":{"windows":{"certificateThumbprint":null,"timestampUrl":null}}}}' | Set-Content $configPath
-          yarn tauri build --bundles msi --config $configPath --ci
+          '{"tauri":{"bundle":{"windows":{"certificateThumbprint":null,"timestampUrl":null}}}}' | Set-Content -LiteralPath $configPath -NoNewline
+          "args=--config $configPath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-      - name: Upload MSI
-        uses: actions/upload-artifact@v4
+      - name: Publish Tauri release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Wootomation-Windows-MSI
-          path: src-tauri/target/release/bundle/msi/*.msi
-          if-no-files-found: error
-          retention-days: 14
+          tagName: v__VERSION__
+          releaseName: Wootomation Active v__VERSION__
+          releaseBody: See the in-app patch notes and the commit history for this release.
+          releaseDraft: false
+          prerelease: false
+          args: ${{ steps.unsigned-windows-config.outputs.args }}
