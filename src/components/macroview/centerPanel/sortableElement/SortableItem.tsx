@@ -12,7 +12,7 @@ import {
   useColorModeValue,
   VStack
 } from '@chakra-ui/react'
-import React, { useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useMacroContext } from '../../../../contexts/macroContext'
 import { ActionEventType } from '../../../../types'
 import {
@@ -73,6 +73,9 @@ export default function SortableItem({ id, element, recording }: Props) {
           return <UpArrowIcon />
         }
       case 'MouseEventAction':
+        if (element.data.type === 'Wheel') {
+          return element.data.delta_y > 0 ? <UpArrowIcon /> : <DownArrowIcon />
+        }
         if (element.data.data.type === 'DownUp') {
           return <DownUpArrowsIcon />
         } else if (element.data.data.type === 'Down') {
@@ -181,6 +184,7 @@ export default function SortableItem({ id, element, recording }: Props) {
             </Box>
           )}
         {element.type === 'MouseEventAction' &&
+          element.data.type === 'Press' &&
           element.data.data.type === 'DownUp' && (
             <Box
               h="32px"
@@ -204,6 +208,34 @@ export default function SortableItem({ id, element, recording }: Props) {
                 whiteSpace="nowrap"
               >
                 {element.data.data.duration + ' ms'}
+              </Text>
+            </Box>
+          )}
+        {element.type === 'MouseEventAction' &&
+          element.data.type === 'Wheel' && (
+            <Box
+              h="32px"
+              w="fit-content"
+              bg={bg}
+              border="1px solid"
+              py={1}
+              px={3}
+              borderColor={kebabColour}
+              rounded="md"
+            >
+              <Text
+                w="fit-content"
+                fontWeight={
+                  selectedElementId !== undefined &&
+                  id === selectedElementId + 1
+                    ? 'bold'
+                    : 'normal'
+                }
+                fontSize="sm"
+                whiteSpace="nowrap"
+              >
+                {Math.abs(element.data.delta_y) +
+                  (Math.abs(element.data.delta_y) === 1 ? ' step' : ' steps')}
               </Text>
             </Box>
           )}

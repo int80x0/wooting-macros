@@ -1,5 +1,5 @@
 import { Box, HStack, Text, useColorModeValue, VStack } from '@chakra-ui/react'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useMacroContext } from '../../../contexts/macroContext'
 import { useSelectedElement } from '../../../contexts/selectors'
 import useMainBgColour from '../../../hooks/useMainBgColour'
@@ -7,7 +7,25 @@ import DelayForm from './editForms/DelayForm'
 import EmptyForm from './editForms/EmptyForm'
 import KeyPressForm from './editForms/KeyPressForm'
 import MousePressForm from './editForms/MousePressForm'
+import MouseWheelForm from './editForms/MouseWheelForm'
 import SystemEventActionForm from './editForms/SystemEventActionForm'
+import {
+  MouseEventAction,
+  MousePressEventAction,
+  MouseWheelEventAction
+} from '../../../types'
+
+function isMouseWheelEvent(
+  element: MouseEventAction
+): element is MouseWheelEventAction {
+  return element.data.type === 'Wheel'
+}
+
+function isMousePressEvent(
+  element: MouseEventAction
+): element is MousePressEventAction {
+  return element.data.type === 'Press'
+}
 
 export function BoxText({ children }: { children: string }) {
   const bg = useColorModeValue('primary-light.50', 'primary-dark.700')
@@ -71,12 +89,23 @@ export default function EditArea() {
           />
         )
       case 'MouseEventAction':
-        return (
-          <MousePressForm
-            selectedElementId={selectedElementId}
-            selectedElement={selectedElement}
-          />
-        )
+        if (isMouseWheelEvent(selectedElement)) {
+          return (
+            <MouseWheelForm
+              selectedElementId={selectedElementId}
+              selectedElement={selectedElement}
+            />
+          )
+        }
+        if (isMousePressEvent(selectedElement)) {
+          return (
+            <MousePressForm
+              selectedElementId={selectedElementId}
+              selectedElement={selectedElement}
+            />
+          )
+        }
+        return <EmptyForm />
       default:
         return <EmptyForm />
     }

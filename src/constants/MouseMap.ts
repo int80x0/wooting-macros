@@ -6,6 +6,11 @@ export interface MouseInputInfo {
   displayString: string
 }
 
+export interface MouseWheelInputInfo {
+  deltaY: number
+  displayString: string
+}
+
 export class MouseInput {
   static get Left(): MouseInputInfo {
     return {
@@ -49,6 +54,27 @@ export class MouseInput {
     MouseInput.Right,
     MouseInput.Mouse4,
     MouseInput.Mouse5
+  ]
+}
+
+export class MouseWheelInput {
+  static get Up(): MouseWheelInputInfo {
+    return {
+      deltaY: 1,
+      displayString: 'Scroll Up'
+    }
+  }
+
+  static get Down(): MouseWheelInputInfo {
+    return {
+      deltaY: -1,
+      displayString: 'Scroll Down'
+    }
+  }
+
+  static readonly all: MouseWheelInputInfo[] = [
+    MouseWheelInput.Up,
+    MouseWheelInput.Down
   ]
 }
 

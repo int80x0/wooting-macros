@@ -7,16 +7,23 @@ import {
   Flex,
   SimpleGrid
 } from '@chakra-ui/react'
-import { MouseInputInfo } from '../../../../constants/MouseMap'
+import {
+  MouseInputInfo,
+  MouseWheelInputInfo
+} from '../../../../constants/MouseMap'
 import { MouseIcon } from '../../../icons'
 import SelectElementButton from '../SelectElementButton'
 import { DefaultMouseDelay } from '../../../../constants'
 
 interface Props {
   elementsToRender: MouseInputInfo[]
+  wheelElementsToRender: MouseWheelInputInfo[]
 }
 
-export default function MouseButtonsSection({ elementsToRender }: Props) {
+export default function MouseButtonsSection({
+  elementsToRender,
+  wheelElementsToRender
+}: Props) {
   return (
     <AccordionItem>
       <h2>
@@ -29,7 +36,7 @@ export default function MouseButtonsSection({ elementsToRender }: Props) {
             gap={2}
           >
             <MouseIcon />
-            Mouse Buttons
+            Mouse
           </Flex>
           <AccordionIcon boxSize={6} />
         </AccordionButton>
@@ -58,6 +65,21 @@ export default function MouseButtonsSection({ elementsToRender }: Props) {
                       button: info.enumVal,
                       duration: DefaultMouseDelay
                     }
+                  }
+                }}
+              />
+            </AspectRatio>
+          ))}
+          {wheelElementsToRender.map((info: MouseWheelInputInfo) => (
+            <AspectRatio ratio={2 / 0.75} key={`wheel-${info.deltaY}`}>
+              <SelectElementButton
+                nameText={info.displayString}
+                properties={{
+                  type: 'MouseEventAction',
+                  data: {
+                    type: 'Wheel',
+                    delta_x: 0,
+                    delta_y: info.deltaY
                   }
                 }}
               />

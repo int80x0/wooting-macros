@@ -83,7 +83,15 @@ export type SystemEventAction = {
   type: 'SystemEventAction'
   data: SystemAction
 }
-export type MouseEventAction = { type: 'MouseEventAction'; data: MouseAction }
+export type MousePressEventAction = {
+  type: 'MouseEventAction'
+  data: { type: 'Press'; data: MousePressAction }
+}
+export type MouseWheelEventAction = {
+  type: 'MouseEventAction'
+  data: { type: 'Wheel'; delta_x: number; delta_y: number }
+}
+export type MouseEventAction = MousePressEventAction | MouseWheelEventAction
 
 /** To be Extended */
 export type ActionEventType =
@@ -160,7 +168,9 @@ export type MousePressAction =
   | { type: 'Up'; button: MouseButton }
   | { type: 'DownUp'; button: MouseButton; duration: number }
 
-export type MouseAction = { type: 'Press'; data: MousePressAction }
+export type MouseAction =
+  | { type: 'Press'; data: MousePressAction }
+  | { type: 'Wheel'; delta_x: number; delta_y: number }
 
 export type SystemAction =
   | { type: 'Open'; action: DirectoryAction }

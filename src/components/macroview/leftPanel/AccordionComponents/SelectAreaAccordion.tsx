@@ -5,7 +5,7 @@ import { Hid } from '../../../../constants/HIDmap'
 import { SystemEvent } from '../../../../constants/SystemEventMap'
 import MouseButtonsSection from './MouseButtonsSection'
 import SystemEventsSection from './SystemEventsSection'
-import { MouseInput } from '../../../../constants/MouseMap'
+import { MouseInput, MouseWheelInput } from '../../../../constants/MouseMap'
 import KeyboardKeysSection from './KeyboardKeysSection'
 import { KeyboardKeyCategory } from '../../../../types'
 import useScrollbarStyles from '../../../../hooks/useScrollbarStyles'
@@ -87,6 +87,15 @@ export default function SelectAreaAccordion({ searchValue }: Props) {
     )
   }, [searchValue])
 
+  const mouseWheelElements = useMemo(() => {
+    if (searchValue.trim() === '') {
+      return MouseWheelInput.all
+    }
+    return MouseWheelInput.all.filter((element) =>
+      element.displayString.toLowerCase().includes(searchValue.toLowerCase())
+    )
+  }, [searchValue])
+
   const indices = useMemo(() => {
     if (searchValue.trim() === '') {
       return undefined
@@ -110,7 +119,7 @@ export default function SelectAreaAccordion({ searchValue }: Props) {
     //   }
     // })
 
-    if (mouseElements.length > 0) {
+    if (mouseElements.length > 0 || mouseWheelElements.length > 0) {
       count++
     }
     return [...Array(count).keys()]
@@ -118,7 +127,8 @@ export default function SelectAreaAccordion({ searchValue }: Props) {
     searchValue,
     systemEventElements.length,
     keyboardKeyCategories,
-    mouseElements.length
+    mouseElements.length,
+    mouseWheelElements.length
   ])
 
   const isValidSearch = useMemo(() => {
@@ -147,8 +157,11 @@ export default function SelectAreaAccordion({ searchValue }: Props) {
           <SystemEventsSection elementsToRender={systemEventElements} />
         )}
         <KeyboardKeysSection keyboardKeyCategories={keyboardKeyCategories} />
-        {mouseElements.length > 0 && (
-          <MouseButtonsSection elementsToRender={mouseElements} />
+        {(mouseElements.length > 0 || mouseWheelElements.length > 0) && (
+          <MouseButtonsSection
+            elementsToRender={mouseElements}
+            wheelElementsToRender={mouseWheelElements}
+          />
         )}
         {/* <PluginsSection pluginCategories={pluginCategories} /> */}
       </Accordion>

@@ -9,12 +9,14 @@ use std::time;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Hash, Eq)]
 #[serde(tag = "type")]
-/// Mouse action: Press presses a defined button. Move moves to absolute coordinates X and Y.
+/// Mouse action: Press presses a defined button, Move moves to absolute coordinates X and Y,
+/// and Wheel scrolls horizontally and/or vertically by the given number of steps.
 ///
 /// ! **UNIMPLEMENTED** - Moving a mouse is only implemented on the backend and no frontend implementation exists yet. Feel free to contribute.
 pub enum MouseAction {
     Press { data: MousePressAction },
     Move { x: i32, y: i32 },
+    Wheel { delta_x: i64, delta_y: i64 },
 }
 
 #[derive(
@@ -72,7 +74,58 @@ impl MouseAction {
                     y: *y as f64,
                 })?;
             }
+            MouseAction::Wheel { delta_x, delta_y } => {
+                send_channel.send(rdev::EventType::Wheel {
+                    delta_x: *delta_x,
+                    delta_y: *delta_y,
+                })?;
+            }
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn serializes_wheel_action_for_frontend() {
+        let action = MouseAction::Wheel {
+            delta_x: 0,
+            delta_y: -2,
+        };
+
+        let json = serde_json::to_value(&action).unwrap();
+        assert_eq!(
+            json,
+            serde_json::json!({
+                "type": "Wheel",
+                "delta_x": 0,
+                "delta_y": -2
+            })
+        );
+        assert_eq!(serde_json::from_value::<MouseAction>(json).unwrap(), action);
+    }
+
+    #[tokio::test]
+    async fn executes_vertical_wheel_actions() {
+        for delta_y in [1, -3] {
+            let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel();
+            let action = MouseAction::Wheel {
+                delta_x: 0,
+                delta_y,
+            };
+
+            action.execute(sender).await.unwrap();
+
+            assert_eq!(
+                receiver.recv().await,
+                Some(rdev::EventType::Wheel {
+                    delta_x: 0,
+                    delta_y,
+                })
+            );
+        }
     }
 }

@@ -95,6 +95,11 @@ export const getElementDisplayString = (element: ActionEventType): string => {
     case 'DelayEventAction':
       return element.data.toString() + ' ms'
     case 'MouseEventAction':
+      if (element.data.type === 'Wheel') {
+        if (element.data.delta_y > 0) return 'Scroll Up'
+        if (element.data.delta_y < 0) return 'Scroll Down'
+        return 'Scroll'
+      }
       return (
         mouseEnumLookup.get(element.data.data.button)?.displayString || 'error'
       )
@@ -167,5 +172,3 @@ export const scrollbarsStylesDark = {
     borderRadius: 'lg'
   }
 }
-
-

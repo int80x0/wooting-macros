@@ -20,14 +20,14 @@ import {
   ResetDefaultIcon,
   UpArrowIcon
 } from '../../../icons'
-import { MouseEventAction } from '../../../../types'
+import { MousePressEventAction } from '../../../../types'
 
 import { DefaultMouseDelay } from '../../../../constants'
 import { BoxText } from '../EditArea'
 
 interface Props {
   selectedElementId: number
-  selectedElement: MouseEventAction
+  selectedElement: MousePressEventAction
 }
 
 export default function MousePressForm({
@@ -86,7 +86,7 @@ export default function MousePressForm({
       return
     }
 
-    const temp: MouseEventAction = {
+    const temp: MousePressEventAction = {
       ...selectedElement,
       data: {
         ...selectedElement.data,
@@ -108,7 +108,7 @@ export default function MousePressForm({
   const onMousepressTypeChange = useCallback(
     (newType: KeyType) => {
       setMousepressType(newType)
-      let temp: MouseEventAction = { ...selectedElement }
+      let temp: MousePressEventAction = { ...selectedElement }
       switch (newType) {
         case KeyType.Down:
           temp = {
@@ -161,7 +161,7 @@ export default function MousePressForm({
 
     setMousepressDuration(DefaultMouseDelay)
 
-    const temp: MouseEventAction = {
+    const temp: MousePressEventAction = {
       ...selectedElement,
       data: {
         ...selectedElement.data,
