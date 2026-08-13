@@ -5012,7 +5012,6 @@ dependencies = [
 [[package]]
 name = "tauri-plugin-log"
 version = "0.0.0"
-source = "git+https://github.com/tauri-apps/plugins-workspace?branch=v1#ed682dd96eb765e7cd3cdbc3cc64f794a0d6f9df"
 dependencies = [
  "byte-unit",
  "fern",
@@ -6424,7 +6423,7 @@ dependencies = [
 
 [[package]]
 name = "wooting-macro-backend"
-version = "1.1.5"
+version = "1.1.6"
 dependencies = [
  "anyhow",
  "copypasta",
@@ -6452,7 +6451,7 @@ dependencies = [
 
 [[package]]
 name = "wooting-macros"
-version = "1.1.5"
+version = "1.1.6"
 dependencies = [
  "anyhow",
  "auto-launch",

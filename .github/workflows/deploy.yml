@@ -95,13 +95,13 @@ jobs:
           tagName: v__VERSION__
           releaseName: Wootomation Active v__VERSION__
           releaseBody: |
-            ## 1.1.5 Release
+            ## 1.1.6 Release
 
             - [Added] Mouse wheel actions for scrolling up and down in macro sequences.
             - [Added] Mouse wheel triggers for starting macros.
             - [Added] Mouse wheel recording with preserved action timing.
             - [Fixed] Mouse wheel triggers on Windows.
-            - [Fixed] Linux release builds use the stable Tauri v1 logging plugin tag.
+            - [Fixed] Linux release builds use a pinned, self-contained Tauri v1 logging plugin.
             - [Changed] Wootomation Active now publishes Windows and Linux release artifacts.
 
             ## More detailed changelog
@@ -111,6 +111,7 @@ jobs:
             - Sequence recording captures mouse wheel input alongside keyboard and mouse button actions.
             - Windows builds work without an Authenticode certificate and retain Tauri updater signatures.
             - Linux releases include AppImage and Debian packages.
+            - The logging dependency no longer relies on mutable or incomplete upstream Git workspace metadata.
           releaseDraft: true
           prerelease: false
           args: ${{ steps.unsigned-windows-config.outputs.args }}

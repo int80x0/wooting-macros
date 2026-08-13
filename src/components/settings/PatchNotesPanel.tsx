@@ -17,7 +17,7 @@ export default function PatchNotesPanel() {
   return (
     <VStack w="full" spacing={4}>
       <Text w="full" fontWeight="bold" fontSize="sm">
-        August 13th, 2026, v. 1.1.5
+        August 13th, 2026, v. 1.1.6
       </Text>
       <VStack w="full">
         <Heading w="full" size="lg" textColor={whatsNewTextColour}>

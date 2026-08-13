@@ -1,6 +1,6 @@
 [package]
 name = "wooting-macros"
-version = "1.1.5"
+version = "1.1.6"
 edition = "2021"
 description = "Macro software made by Wooting."
 authors = ["Jeroen N", "Erik S", "Simon W", "David M", "Khang N", "Pola M"]
@@ -22,7 +22,7 @@ tokio-serde = { version = "0.9", features = ["json"] }
 wooting-macro-backend = { path = "../wooting-macro-backend" }
 auto-launch = "0.5"
 log = "0.4"
-tauri-plugin-log = { git = "https://github.com/tauri-apps/tauri-plugin-log", tag = "v0.1.0", features = ["colored"] }
+tauri-plugin-log = { path = "vendor/tauri-plugin-log", features = ["colored"] }
 byte-unit = "5.1"
 anyhow = "1.0"
 
