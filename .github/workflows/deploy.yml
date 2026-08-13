@@ -95,13 +95,13 @@ jobs:
           tagName: v__VERSION__
           releaseName: Wootomation Active v__VERSION__
           releaseBody: |
-            ## 1.1.4 Release
+            ## 1.1.5 Release
 
             - [Added] Mouse wheel actions for scrolling up and down in macro sequences.
             - [Added] Mouse wheel triggers for starting macros.
             - [Added] Mouse wheel recording with preserved action timing.
             - [Fixed] Mouse wheel triggers on Windows.
-            - [Fixed] Linux release builds resolve the logging plugin from crates.io.
+            - [Fixed] Linux release builds use the stable Tauri v1 logging plugin tag.
             - [Changed] Wootomation Active now publishes Windows and Linux release artifacts.
 
             ## More detailed changelog
