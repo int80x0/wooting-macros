@@ -6,6 +6,7 @@ import {
   Collection,
   Keypress,
   MacroData,
+  MouseAction,
   MousePressAction,
   TriggerRecordingItem
 } from '../types'
@@ -58,13 +59,13 @@ export const checkIfMouseWheelDirectionArray = (
 }
 
 export const checkIfKeypress = (
-  e: Keypress | MousePressAction | undefined
+  e: Keypress | MousePressAction | MouseAction | undefined
 ): e is Keypress => {
   return (e as Keypress).keypress !== undefined
 }
 
 export const checkIfMouseButton = (
-  e: Keypress | MousePressAction | undefined
+  e: Keypress | MousePressAction | MouseAction | undefined
 ): e is MousePressAction => {
   return (e as MousePressAction).button !== undefined
 }

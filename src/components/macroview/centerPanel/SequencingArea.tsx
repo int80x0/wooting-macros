@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react'
 import { DeleteIcon, SettingsIcon, TimeIcon } from '@chakra-ui/icons'
 import { useCallback } from 'react'
-import { Keypress, MousePressAction } from '../../../types'
+import { Keypress, MouseAction, MousePressAction } from '../../../types'
 import { useMacroContext } from '../../../contexts/macroContext'
 import useRecordingSequence from '../../../hooks/useRecordingSequence'
 import { useSettingsContext } from '../../../contexts/settingsContext'
@@ -30,6 +30,8 @@ interface Props {
   onOpenMacroSettingsModal: () => void
 }
 
+type RecordedWheelAction = Extract<MouseAction, { type: 'Wheel' }>
+
 export default function SequencingArea({ onOpenMacroSettingsModal }: Props) {
   const {
     sequence,
@@ -44,14 +46,24 @@ export default function SequencingArea({ onOpenMacroSettingsModal }: Props) {
 
   const onItemChanged = useCallback(
     (
-      item: Keypress | MousePressAction | undefined,
-      prevItem: Keypress | MousePressAction | undefined,
+      item: Keypress | MousePressAction | RecordedWheelAction | undefined,
+      prevItem: Keypress | MousePressAction | RecordedWheelAction | undefined,
       timeDiff: number,
       isUpEvent: boolean
     ) => {
       if (item === undefined) {
         return
       }
+
+      const action = checkIfKeypress(item)
+        ? { type: 'KeyPressEventAction' as const, data: item }
+        : item.type === 'Wheel'
+          ? { type: 'MouseEventAction' as const, data: item }
+          : {
+              type: 'MouseEventAction' as const,
+              data: { type: 'Press' as const, data: item }
+            }
+
       // If necessary, adjust previous element.
       if (isUpEvent && prevItem !== undefined) {
         if (checkIfKeypress(prevItem) && checkIfKeypress(item)) {
@@ -87,41 +99,15 @@ export default function SequencingArea({ onOpenMacroSettingsModal }: Props) {
       }
       // Add elements to the sequence. If there is no previous item, the item we are adding is the first one, thus we do not include a delay element.
       if (prevItem === undefined) {
-        if (checkIfKeypress(item)) {
-          onElementAdd({
-            type: 'KeyPressEventAction',
-            data: item
-          })
-        } else {
-          onElementAdd({
-            type: 'MouseEventAction',
-            data: { type: 'Press', data: item }
-          })
-        }
+        onElementAdd(action)
       } else {
-        if (checkIfKeypress(item)) {
-          onElementsAdd([
-            {
-              type: 'DelayEventAction',
-              data: timeDiff
-            },
-            {
-              type: 'KeyPressEventAction',
-              data: item
-            }
-          ])
-        } else {
-          onElementsAdd([
-            {
-              type: 'DelayEventAction',
-              data: timeDiff
-            },
-            {
-              type: 'MouseEventAction',
-              data: { type: 'Press', data: item }
-            }
-          ])
-        }
+        onElementsAdd([
+          {
+            type: 'DelayEventAction',
+            data: timeDiff
+          },
+          action
+        ])
       }
     },
     [onElementAdd, onElementsAdd, sequence.length, updateElement]

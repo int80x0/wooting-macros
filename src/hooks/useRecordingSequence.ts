@@ -5,25 +5,27 @@ import {
   webCodeLocationHIDLookup
 } from '../constants/HIDmap'
 import { webButtonLookup } from '../constants/MouseMap'
-import { Keypress, MousePressAction } from '../types'
+import { Keypress, MouseAction, MousePressAction } from '../types'
 import { error } from 'tauri-plugin-log'
 import { useToast } from '@chakra-ui/react'
 import { invoke } from '@tauri-apps/api'
 
+type RecordedWheelAction = Extract<MouseAction, { type: 'Wheel' }>
+
 export default function useRecordingSequence(
   onItemChanged: (
-    item: Keypress | MousePressAction | undefined,
-    prevItem: Keypress | MousePressAction | undefined,
+    item: Keypress | MousePressAction | RecordedWheelAction | undefined,
+    prevItem: Keypress | MousePressAction | RecordedWheelAction | undefined,
     timeDiff: number,
     isUpEvent: boolean
   ) => void
 ) {
   const [recording, setRecording] = useState(false)
-  const [item, setItem] = useState<Keypress | MousePressAction | undefined>(
-    undefined
-  )
+  const [item, setItem] = useState<
+    Keypress | MousePressAction | RecordedWheelAction | undefined
+  >(undefined)
   const [prevItem, setPrevItem] = useState<
-    Keypress | MousePressAction | undefined
+    Keypress | MousePressAction | RecordedWheelAction | undefined
   >(undefined)
 
   const toast = useToast()
@@ -149,6 +151,34 @@ export default function useRecordingSequence(
     [eventType, item, onItemChanged, prevTimestamp]
   )
 
+  const addMousewheel = useCallback(
+    (event: WheelEvent) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      if (event.deltaY === 0) {
+        return
+      }
+
+      const timeDiff = Math.round(event.timeStamp - prevTimestamp)
+      const wheel: RecordedWheelAction = {
+        type: 'Wheel',
+        delta_x: 0,
+        // DOM wheel deltas use the opposite vertical sign to the macro backend.
+        // Record one stable wheel step per event instead of device-specific pixel values.
+        delta_y: event.deltaY < 0 ? 1 : -1
+      }
+
+      setPrevTimestamp(event.timeStamp)
+      setPrevEventType(eventType)
+      setPrevItem(item)
+      setEventType('Down')
+      setItem(wheel)
+      onItemChanged(wheel, item, timeDiff, false)
+    },
+    [eventType, item, onItemChanged, prevTimestamp]
+  )
+
   useEffect(() => {
     if (!recording) {
       return
@@ -158,6 +188,7 @@ export default function useRecordingSequence(
     window.addEventListener('mousedown', addMousepress, false)
     window.addEventListener('keyup', addKeypress, false)
     window.addEventListener('mouseup', addMousepress, false)
+    window.addEventListener('wheel', addMousewheel, { passive: false })
     invoke<void>('control_grabbing', { frontendBool: false }).catch(
       (e: string) => {
         error(e)
@@ -169,13 +200,14 @@ export default function useRecordingSequence(
       window.removeEventListener('mousedown', addMousepress, false)
       window.removeEventListener('keyup', addKeypress, false)
       window.removeEventListener('mouseup', addMousepress, false)
+      window.removeEventListener('wheel', addMousewheel, false)
       invoke<void>('control_grabbing', { frontendBool: true }).catch(
         (e: string) => {
           error(e)
         }
       )
     }
-  }, [recording, addKeypress, addMousepress])
+  }, [recording, addKeypress, addMousepress, addMousewheel])
 
   return {
     recording,
